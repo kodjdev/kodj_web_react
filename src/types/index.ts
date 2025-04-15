@@ -6,6 +6,13 @@ interface Timestamp {
   nanoseconds: number;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  role?: string;
+}
+
 export interface Event {
   id: string;
   title: string;

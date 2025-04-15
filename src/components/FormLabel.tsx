@@ -11,13 +11,9 @@ interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   };
 }
 
-export const FormLabel: React.FC<FormLabelProps> = ({
-  id,
-  htmlFor,
-  labelText,
-  className,
-  ...props
-}) => {
+export default function FormLabel(
+  { id, htmlFor, labelText, className, ...props }: FormLabelProps
+) {
   return (
     <label
       id={id}

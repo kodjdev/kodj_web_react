@@ -1,192 +1,175 @@
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cva, VariantProps } from "class-variance-authority";
-import { cn } from "../../lib/utils";
+import React, { ButtonHTMLAttributes } from "react";
+import styled, { css } from "styled-components";
+import { Link, LinkProps } from "react-router-dom"; // Import Link and LinkProps
+import themeColor from "@/tools/themeColors";
 
-import theme from "@/tools/theme";
-import useHover from "@/hooks/theme/useHover";
+type ButtonVariant = "primary" | "secondary" | "text" | "light";
 
-export interface ButtonColorConfig {
-  backgroundColor: string;
-  hoverBackgroundColor: string;
-  disabledBackgroundColor: string;
-  defaultTextColor: string;
-  boxShadow?: string;
-  hoverBoxShadow?: string;
-  clickedBoxShadow?: string;
-}
-
-type CustomColor = "blue" | "purple_inset" | "gray" | "white" | "red" | "link";
-type BorderRadius =
-  | "none"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "two_xl"
-  | "three_xl"
-  | "full";
-
-// CVA factory for “base” stylelarni yaratamiz
-const baseButtonVariants = cva(
-  // basic tailwind classlarni define qilamiz
-  ` inline-flex items-center justify-center gap-2 
-    whitespace-nowrap rounded-md transition-colors 
-    focus-visible:outline-none focus-visible:ring-1 
-    disabled:pointer-events-none disabled:opacity-50
-  `,
-  {
-    variants: {
-      size: {
-        default: theme.variantSizes.default,
-        sm: theme.variantSizes.sm,
-        md: theme.variantSizes.md,
-        lg: theme.variantSizes.lg,
-      },
-      fullWidth: {
-        true: "w-full",
-        false: "w-auto",
-      },
-      radius: {
-        none: theme.radiusSizes.none,
-        sm: theme.radiusSizes.sm,
-        md: theme.radiusSizes.md,
-        lg: theme.radiusSizes.lg,
-        xl: theme.radiusSizes.xl,
-        two_xl: theme.radiusSizes.two_xl,
-        three_xl: theme.radiusSizes.three_xl,
-        full: theme.radiusSizes.full,
-      },
-      defaultVariants: {
-        size: "default",
-        fullWidth: false,
-        radius: "md",
-        variants: "solid",
-      },
-    },
-  }
-);
-
-const buttonColorConfigs: Record<CustomColor, ButtonColorConfig> = {
-  blue: {
-    backgroundColor: theme.blue,
-    hoverBackgroundColor: theme.blue_dark,
-    disabledBackgroundColor: theme.blue_disabled,
-    defaultTextColor: theme.white,
-    boxShadow: theme.shadow,
-    clickedBoxShadow: theme.shadow_clicked,
-  },
-  purple_inset: {
-    backgroundColor: theme.purple,
-    hoverBackgroundColor: theme.purple_dark,
-    disabledBackgroundColor: theme.purple_disabled,
-    defaultTextColor: theme.white,
-    boxShadow: theme.shadow_purple_button_inset,
-  },
-  gray: {
-    backgroundColor: theme.gray_dark,
-    hoverBackgroundColor: theme.gray_dark,
-    disabledBackgroundColor: theme.gray,
-    defaultTextColor: theme.gray,
-    boxShadow: theme.shadow_gray_button_inset,
-  },
-  white: {
-    backgroundColor: theme.white,
-    hoverBackgroundColor: theme.white_dark,
-    disabledBackgroundColor: theme.white,
-    defaultTextColor: theme.purple,
-    boxShadow: theme.shadow,
-    clickedBoxShadow: theme.shadow_clicked,
-  },
-  red: {
-    backgroundColor: theme.red_button,
-    hoverBackgroundColor: theme.red_button,
-    disabledBackgroundColor: theme.red_background,
-    defaultTextColor: theme.red_text,
-  },
-  link: {
-    backgroundColor: "transparent",
-    hoverBackgroundColor: "transparent",
-    disabledBackgroundColor: "transparent",
-    defaultTextColor: theme.blue_text,
-  },
+type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "type"> & {
+  variant?: ButtonVariant;
+  size?: "sm" | "md" | "lg";
+  fullWidth?: boolean;
+  asLink?: boolean;
+  to?: LinkProps["to"];
+  replace?: LinkProps["replace"];
+  state?: LinkProps["state"];
+  htmlType?: ButtonHTMLAttributes<HTMLButtonElement>["type"];
+  children?: React.ReactNode;
 };
 
-// extended props type bilan  HTML props + CVA variant + theme-lens ni merge qilamniz
-export interface AtomicButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof baseButtonVariants> {
-  asChild?: boolean;
+const StyledButton = styled("button")<{
+  variant: ButtonVariant;
+  size: "sm" | "md" | "lg";
   fullWidth?: boolean;
-  color?: CustomColor;
-  textColor?: string;
-  radius?: BorderRadius;
   disabled?: boolean;
-  varint?: "solid" | "outline" | "red" | "ghost_gray";
-}
+  as?: typeof Link;
+}>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    opacity 150ms;
+  width: ${(props) => (props.fullWidth ? "100%" : "auto")};
+  text-transform: uppercase;
+  text-decoration: none;
 
-export const Button = React.forwardRef<HTMLButtonElement, AtomicButtonProps>(
-  (
-    {
-      className,
-      size,
-      fullWidth,
-      asChild = false,
-      color = "blue",
-      textColor,
-      // radius = "md",
-      // variant = "solid",
-      disabled,
-      onClick,
-      ...props
-    },
-    ref
-  ) => {
-    const Comp = asChild ? Slot : "button";
+  ${(props) =>
+    props.disabled &&
+    css`
+      cursor: not-allowed;
+      opacity: 0.6;
+      pointer-events: none;
+    `}
 
-    // useHover hook use
-    const [hoverProps, isHover, isClicked] = useHover();
+  ${(props) => {
+    switch (props.size) {
+      case "sm":
+        return css`
+          height: 36px;
+          padding: 0 16px;
+          font-size: ${themeColor.typography.body.small.fontSize || 14}px;
+        `;
+      case "lg":
+        return css`
+          height: 52px;
+          padding: 0 24px;
+          font-size: ${themeColor.typography.body.large.fontSize || 16}px;
+        `;
+      default: // 'md'
+        return css`
+          height: 44px;
+          padding: 0 24px;
+          font-size: ${themeColor.typography.body.medium.fontSize || 14}px;
+        `;
+    }
+  }}
 
-    // style object orqali themeni ishlatish:
-    const getStyleFromTheme = React.useMemo(() => {
-      const colorConfig = buttonColorConfigs[color];
-      const isDisabled = Boolean(disabled);
+  ${(props) => {
+    switch (props.variant) {
+      case "secondary":
+        return css`
+          background-color: ${themeColor.colors.gray.main};
+          color: ${themeColor.colors.neutral.white};
 
-      return {
-        backgroundColor: isDisabled
-          ? colorConfig.disabledBackgroundColor
-          : isHover
-          ? colorConfig.hoverBackgroundColor
-          : colorConfig.backgroundColor,
-        color: textColor || colorConfig.defaultTextColor,
-        boxShadow:
-          isClicked && !isDisabled && colorConfig.clickedBoxShadow
-            ? colorConfig.clickedBoxShadow
-            : colorConfig.boxShadow || "none",
-        fontWeight: color === "gray" && isHover ? 500 : undefined,
-      };
-    }, [color, disabled, isHover, isClicked, textColor]);
+          &:hover:not(:disabled) {
+            background-color: ${themeColor.colors.gray.dark};
+          }
+        `;
+      case "text":
+        return css`
+          background-color: transparent;
+          color: ${themeColor.colors.neutral.white ||
+          "white"}; // Ensure white text for header
 
-    // CVA va boshqa classlarni qo'shamiz
-    const classes = cn(baseButtonVariants({ size, className, fullWidth }));
+          &:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.1); // Subtle white hover
+          }
+        `;
+      case "light": // for login or light-themed buttons
+        return css`
+          background-color: ${themeColor.colors.neutral.white};
+          color: ${themeColor.colors.neutral.black};
+
+          &:hover:not(:disabled) {
+            background-color: ${themeColor.colors.gray.main};
+          }
+        `;
+      default: // 'primary'
+        return css`
+          background-color: ${themeColor.colors.primary.main};
+          color: ${themeColor.colors.neutral.white};
+
+          &:hover:not(:disabled) {
+            background-color: ${themeColor.colors.primary.dark};
+          }
+        `;
+    }
+  }}
+`;
+
+/**
+ * Button component - Atom Component
+ * Renders a standard HTML button or a react-router-dom Link styled as a button,
+ * based on the 'asLink' prop.
+ *
+ * @returns A button or Link element with specified styles.
+ */
+
+export default function Button({
+  variant = "primary",
+  size = "md",
+  fullWidth = false,
+  children,
+  asLink = false, // Default to rendering as a button
+  to, // 'to' is only used if asLink is true
+  replace,
+  state,
+  htmlType = "button",
+  disabled,
+  ...rest
+}: ButtonProps) {
+  const commonStyledProps = {
+    variant,
+    size,
+    fullWidth,
+    disabled,
+  };
+
+  if (asLink) {
+    if (to === undefined) {
+      console.warn("Button: 'to' prop is required when 'asLink' is true.");
+      // Fallback or render null/error? For now, render Link with default '/'
+      to = "/";
+    }
+    // Props specific to Link component
+    const linkProps = { to, replace, state };
 
     return (
-      <Comp
-        ref={ref}
-        className={classes}
-        onClick={disabled ? undefined : onClick}
-        style={{
-          transitionDuration: theme.duration,
-          textAlign: "center",
-          cursor: disabled ? "not-allowed" : "pointer",
-          ...getStyleFromTheme,
-        }}
-        disabled={disabled}
-        {...hoverProps}
-        {...props}
-      />
+      <StyledButton
+        as={Link}
+        {...commonStyledProps}
+        {...linkProps} // ink-specific props pass qilamiz
+        {...rest} //  Remaining compatible props larni pass qilamiz
+      >
+        {children}
+      </StyledButton>
     );
   }
-);
 
-Button.displayName = "MainButton";
+  // standard button uchun
+  return (
+    <StyledButton
+      as="button"
+      type={htmlType} // we use htmlType for the button's type attribute
+      {...commonStyledProps}
+      {...rest} // qolgan compatible props larni pass qilamiz
+    >
+      {children}
+    </StyledButton>
+  );
+}
